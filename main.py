@@ -3,6 +3,11 @@
 Entry for make.fun bounty ai-judge-rich-01 ("Make the AI judge rich").
 Standard library only, deterministic, no network, no randomness.
 Writes the plan to <MAKEFUN_OUTPUT_DIR>/entry.txt (default /output).
+
+Competition gate: entry.txt must be UTF-8, 1-1,000 characters, and not
+only whitespace. The plan is a fixed string, so the output is byte-
+identical on every run; main() fails fast (exit non-zero, no file
+written) if the plan is empty, whitespace-only, or over 1,000 chars.
 """
 
 import os
@@ -26,6 +31,12 @@ PLAN = (
 
 
 def main() -> None:
+    # Fail fast: never write an invalid entry file.
+    if not PLAN.strip():
+        raise SystemExit("error: plan is empty or whitespace-only")
+    if len(PLAN) > 1000:
+        raise SystemExit(f"error: plan is {len(PLAN)} chars, over the 1,000-char limit")
+
     output_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, "entry.txt")
